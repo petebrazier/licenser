@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { issueLicence, setStatus, putSecret, removeSecret, blockInstall } from './actions'
+import { issueLicence, setStatus, putSecret, putSecretsBulk, removeSecret, blockInstall } from './actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -167,6 +167,18 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ i
           <input style={input} name="name" placeholder="OPENAI_API_KEY" />
           <input style={input} name="value" type="password" placeholder="value" size={40} />
           <button style={button} type="submit">Set shared</button>
+        </form>
+
+        <form action={putSecretsBulk} style={{ marginTop: '.9rem' }}>
+          <label style={{ ...dim, display: 'block', marginBottom: '.35rem' }}>
+            Or paste a whole .env block &mdash; one NAME=value per line, comments ignored.
+          </label>
+          <textarea
+            name="bulk" rows={8} spellCheck={false}
+            placeholder={'OPENAI_API_KEY=sk-...\nFIRECRAWL_API_KEY=fc-...\nSTRIPE_SECRET_KEY=sk_live_...'}
+            style={{ ...input, width: '100%', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', display: 'block' }}
+          />
+          <button style={button} type="submit">Store all of them</button>
         </form>
       </section>
 
