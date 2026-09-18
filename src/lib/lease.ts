@@ -66,11 +66,20 @@ export async function lease(input: {
   const sb = db()
   const ctx = { installationId: input.installationId, host: input.host, ip: input.ip }
 
-  const { data: licence } = await sb
+  const { data: licence, error } = await sb
     .from('licences')
     .select('id, customer, status, expires_at, allowed_hosts, max_installs')
     .eq('key_hash', hashKey(input.key))
     .maybeSingle<LicenceRow>()
+
+  // A database that cannot be read is OUR failure, and must never be dressed up
+  // as "your key is not recognised" — that answer stops a paying customer's
+  // platform instantly, with no grace period, because a refusal is meant to be
+  // unambiguous. Throwing gets it a 503, which the installation treats as
+  // silence and rides out.
+  if (error) {
+    throw new Error(`licence lookup failed: ${error.message}`)
+  }
 
   if (!licence) {
     await record('lease.refused', 'unknown key', ctx)
