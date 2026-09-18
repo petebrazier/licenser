@@ -47,8 +47,20 @@ In the installation's environment:
     LICENCE_SERVICE_URL=https://<this service>
     LICENCE_PUBLIC_KEY=<the public key printed above>
 
-and **do not set** the provider keys it will be leasing. If one is present in
-the environment it wins, and the licence stops being load-bearing.
+Give it **no real provider keys**. A leased value always replaces whatever is in
+the environment, so a genuine key sitting there is simply a copy of the secret
+in the customer's dashboard, which is the thing this design exists to avoid.
+
+One wrinkle: twenty-one routes construct their provider client when the module
+loads, so `next build` fails outright if the variable is absent — the build
+happens on the customer's Vercel, before any lease exists. Set placeholders:
+
+    OPENAI_API_KEY=placeholder-for-build
+    ANTHROPIC_API_KEY=placeholder-for-build
+    FIRECRAWL_API_KEY=placeholder-for-build
+
+They satisfy the build and are worthless at runtime: every call with one returns
+401, and the lease overwrites them before the first request is served.
 
 ## The honest limits
 
